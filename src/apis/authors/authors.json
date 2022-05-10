@@ -9,12 +9,13 @@
     "id": "fbqfupw9el306sp83"
   },
   {
-    "name": "Pauli",
+    "name": "Pauliedited",
     "surname": "Adegbami",
     "email": "paul@abc.com",
     "date of birth": "10-05-2020",
     "avatar": "https://ui-avatars.com/api/?name=PAUL+Adegbami",
     "createdAt": "2022-05-10T13:27:14.949Z",
-    "id": "fbqfupw9el306t8n9"
+    "id": "fbqfupw9el306t8n9",
+    "updatedAt": "2022-05-10T13:44:48.937Z"
   }
 ]

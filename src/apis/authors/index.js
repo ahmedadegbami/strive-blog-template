@@ -3,6 +3,7 @@ import fs, { readFile } from "fs";
 import { fileURLToPath } from "url";
 import { dirname, join, parse } from "path";
 import uniqid from "uniqid";
+import { response } from "express";
 
 const authorsRouter = express.Router();
 // // 1. get the file and convert to path
@@ -83,6 +84,22 @@ authorsRouter.delete("/:userid", (req, res) => {
   res.status(204).send();
 });
 
-authorsRouter.put;
+authorsRouter.put("/:userid", (req, res) => {
+  //   1; read the file
+  const users = JSON.parse(fs.readFileSync(jsonFilePath));
+  //   2. modify the specific user
+  const index = users.findIndex((user) => user.id === req.params.userid);
+  const oldUser = users[index];
+
+  const updatedUser = { ...oldUser, ...req.body, updatedAt: new Date() };
+
+  users[index] = updatedUser;
+
+  //   3. save modifies Array
+  fs.writeFileSync(jsonFilePath, JSON.stringify(users));
+
+  //   4. Send a proper response
+  res.send(updatedUser);
+});
 
 export default authorsRouter;
