@@ -102,4 +102,14 @@ authorsRouter.put("/:userid", (req, res) => {
   res.send(updatedUser);
 });
 
+// POST authors/checkEmail => check if another author has the same email. The parameter should be passed in the body. It should return true or false.
+authorsRouter.post("/checkEmail", (req, res) => {
+  // 1. read the file
+  const users = JSON.parse(fs.readFileSync(jsonFilePath));
+  // 2. find the user with the same email
+  const user = users.find((user) => user.email === req.body.email);
+  // 3. send back a proper response
+  res.send(user ? true : false);
+});
+
 export default authorsRouter;
