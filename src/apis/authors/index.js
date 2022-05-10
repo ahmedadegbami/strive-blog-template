@@ -41,20 +41,30 @@ authorsRouter.post("/", (req, res) => {
   console.log("req body:", req.body);
 
   // 2. create a new user object
-  const newUser = { ...req.body, createdAt: new Date(), id: uniqid() };
-  console.log(newUser);
+
+  const newAuthor = {
+    ...req.body,
+    createdAt: new Date(),
+    id: uniqid(),
+    avatar:
+      `https://ui-avatars.com/api/name=` +
+      req.body.name +
+      "+" +
+      req.body.surname,
+  };
+  console.log(newAuthor);
 
   //3. read the file
   const users = JSON.parse(fs.readFileSync(jsonFilePath));
 
   //4. push the newUser into the array
-  users.push(newUser);
+  users.push(newAuthor);
 
   //5, write the array back to file
   fs.writeFileSync(jsonFilePath, JSON.stringify(users));
 
   //6 send response
-  res.status(201).send({ newUser });
+  res.status(201).send({ newAuthor });
 });
 
 authorsRouter.get("/:userid", (req, res) => {
@@ -91,7 +101,11 @@ authorsRouter.put("/:userid", (req, res) => {
   const index = users.findIndex((user) => user.id === req.params.userid);
   const oldUser = users[index];
 
-  const updatedUser = { ...oldUser, ...req.body, updatedAt: new Date() };
+  const updatedUser = {
+    ...oldUser,
+    ...req.body,
+    updatedAt: new Date(),
+  };
 
   users[index] = updatedUser;
 
