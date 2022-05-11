@@ -1,18 +1,12 @@
 [
   {
-    "_id": "SERVER GENERATED ID",
-    "category": "ARTICLE CATEGORY",
-    "title": "ARTICLE TITLE",
+    "category": "Sport",
+    "title": "Ronaldo scores",
     "cover": "ARTICLE COVER (IMAGE LINK)",
-    "readTime": {
-      "value": 2,
-      "unit": "minute"
-    },
-    "author": {
-      "name": "AUTHOR AVATAR NAME",
-      "avatar": "AUTHOR AVATAR LINK"
-    },
+    "readTime": { "value": 2, "unit": "minute" },
+    "author": { "name": "AUTHOR AVATAR NAME", "avatar": "AUTHOR AVATAR LINK" },
     "content": "HTML",
-    "createdAt": "NEW DATE"
+    "createdAt": "2022-05-11T13:08:05.730Z",
+    "_id": "fbqfuplatl31lkgki"
   }
 ]
