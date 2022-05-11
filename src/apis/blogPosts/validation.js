@@ -2,31 +2,17 @@ import createError from "http-errors";
 import { checkSchema, validationResult } from "express-validator";
 
 const blogPostsSchema = {
-  //   readTime: {
-  //     value: {
-  //       in: ["body"],
-  //       isNumber: true,
-  //       min: 1,
-  //       max: 2,
-  //       errorMessage: "value must be between 1 and 10",
-  //     },
-  //     unit: {
-  //       in: ["body"],
-  //       isString: true,
-  //       errorMessage: "unit unit must be a string",
-  //     },
-  //   },
-
-  readTime: {
-    value: {
-      min: 2,
-      errorMessage: "Read time must be minimum of 2 minutes",
-    },
-    unit: {
-      in: ["body"],
-      isString: { errorMessage: "Unit is required" },
-    },
+  "readTime.value": {
+    in: ["body"],
+    isInt: true,
+    errorMessage: "value must be between 1 and 10",
   },
+  "readTime.unit": {
+    in: ["body"],
+    isString: true,
+    errorMessage: "unit unit must be a string",
+  },
+
   title: {
     in: ["body"],
     isString: true,
