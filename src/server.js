@@ -1,5 +1,6 @@
 import express from "express";
 import authorsRouter from "./apis/authors/index.js";
+import blogPostsRouter from "./apis/blogPosts/index.js";
 import listEndpoints from "express-list-endpoints";
 import cors from "cors";
 
@@ -10,6 +11,7 @@ server.use(express.json());
 server.use(cors());
 
 server.use("/authors", authorsRouter);
+server.use("/blogPosts", blogPostsRouter);
 
 console.table(listEndpoints(server));
 
