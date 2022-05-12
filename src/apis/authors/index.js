@@ -22,10 +22,10 @@ const authorsRouter = express.Router();
 // const jsonFilePath = join(ParentDir, "authors.json");
 // console.log("json file path:", jsonFilePath);
 
-const jsonFilePath = join(
-  dirname(fileURLToPath(import.meta.url)),
-  "authors.json"
-);
+// const jsonFilePath = join(
+//   dirname(fileURLToPath(import.meta.url)),
+//   "authors.json"
+// );
 
 // get starts here
 authorsRouter.get("/", (req, res) => {

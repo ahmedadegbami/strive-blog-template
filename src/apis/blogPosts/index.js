@@ -5,23 +5,24 @@ import { dirname, join } from "path";
 import uniqid from "uniqid";
 import createError from "http-errors";
 import { checkBlogPostSchema, checkValidationResult } from "./validation.js";
+import { readBlogs, writeBlogs } from "../../lib/fs-tools.js";
 
 const blogPostsRouter = express.Router();
 
 // I concatenate the file path with the file name
-const blogPostsFilePath = join(
-  dirname(fileURLToPath(import.meta.url)),
-  "blog.json"
-);
+// const blogPostsFilePath = join(
+//   dirname(fileURLToPath(import.meta.url)),
+//   "blog.json"
+// );
 //I created a reusable function to read and write the blogs
-const readBlogs = () => JSON.parse(fs.readFileSync(blogPostsFilePath));
-const writeBlogs = (blogsArray) =>
-  fs.writeFileSync(blogPostsFilePath, JSON.stringify(blogsArray));
+// const readBlogs = () => JSON.parse(fs.readFileSync(blogPostsFilePath));
+// const writeBlogs = (blogsArray) =>
+//   fs.writeFileSync(blogPostsFilePath, JSON.stringify(blogsArray));
 
 // GET all blogs
-blogPostsRouter.get("/", (req, res, next) => {
+blogPostsRouter.get("/", async (req, res, next) => {
   try {
-    const blogs = readBlogs();
+    const blogs = await readBlogs();
     if (req.query && req.query.category) {
       const filteredBlogs = blogs.filter(
         (blog) => blog.category === req.query.category
@@ -40,9 +41,9 @@ blogPostsRouter.post(
   "/",
   checkBlogPostSchema,
   checkValidationResult,
-  (req, res, next) => {
+  async (req, res, next) => {
     try {
-      const blogs = readBlogs();
+      const blogs = await readBlogs();
       const newBlog = { ...req.body, createdAt: new Date(), _id: uniqid() };
       blogs.push(newBlog);
       writeBlogs(blogs);
@@ -54,9 +55,9 @@ blogPostsRouter.post(
 );
 
 // GET a blog by id
-blogPostsRouter.get("/:blogId", (req, res, next) => {
+blogPostsRouter.get("/:blogId", async (req, res, next) => {
   try {
-    const blogs = readBlogs();
+    const blogs = await readBlogs();
     const foundBlog = blogs.find((blog) => blog._id === req.params.blogId);
     if (foundBlog) {
       res.send(foundBlog);
@@ -70,9 +71,9 @@ blogPostsRouter.get("/:blogId", (req, res, next) => {
 });
 
 // PUT a blog by id
-blogPostsRouter.put("/:blogId", (req, res) => {
+blogPostsRouter.put("/:blogId", async (req, res, next) => {
   try {
-    const blogs = readBlogs();
+    const blogs = await readBlogs();
     const index = blogs.findIndex((blog) => blog._id === req.params.blogId);
     if (index !== -1) {
       const oldBlog = blogs[index];
@@ -90,9 +91,9 @@ blogPostsRouter.put("/:blogId", (req, res) => {
 });
 
 // DELETE a blog by id
-blogPostsRouter.delete("/:blogId", (req, res) => {
+blogPostsRouter.delete("/:blogId", async (req, res, next) => {
   try {
-    const blogs = readBlogs();
+    const blogs = await readBlogs();
     const remBlog = blogs.filter((blog) => blog._id !== req.params.blogId);
     if (remBlog) {
       writeBlogs(remBlog);
@@ -102,6 +103,38 @@ blogPostsRouter.delete("/:blogId", (req, res) => {
     }
   } catch (error) {
     next(error);
+  }
+});
+
+blogPostsRouter.get("/:blogId/comments", async (req, res, next) => {
+  try {
+    const blogs = await readBlogs();
+    const foundBlog = blogs.find((blog) => blog._id === req.params.blogId);
+    if (foundBlog) {
+      res.send(foundBlog.comments);
+    } else {
+      next(createError(404, `Blog with id ${req.params.blogId} not found`));
+    }
+  } catch (error) {
+    next(error);
+  }
+});
+
+blogPostsRouter.post("/:blogId/comments", async (req, res, next) => {
+  const blogs = await readBlogs();
+  const newComment = {
+    ...req.body,
+    createdAt: new Date(),
+    id: uniqid(),
+  };
+  console.log(newComment);
+  const foundBlog = blogs.find((blog) => blog._id === req.params.blogId);
+  if (foundBlog) {
+    foundBlog.comments.push(newComment);
+    writeBlogs(blogs);
+    res.send(newComment);
+  } else {
+    next(createError(404, `Blog with id ${req.params.blogId} not found`));
   }
 });
 

@@ -33,16 +33,6 @@ const blogPostsSchema = {
     isString: true,
     errorMessage: "author name must be a string",
   },
-  "author.avatar": {
-    in: ["body"],
-    isImage: true,
-    errorMessage: "author avatar must be an image",
-  },
-  cover: {
-    in: ["body"],
-    isImage: true,
-    errorMessage: "cover must be an image",
-  },
 };
 
 export const checkBlogPostSchema = checkSchema(blogPostsSchema);
