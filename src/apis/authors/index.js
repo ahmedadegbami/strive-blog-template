@@ -4,8 +4,10 @@ import { fileURLToPath } from "url";
 import { dirname, join, parse } from "path";
 import uniqid from "uniqid";
 import { response } from "express";
+import { readAuthors, writeAuthors } from "../../lib/fs-tools.js";
+import createError from "http-errors";
 
-const authorsRouter = express.Router();
+const authorPostsRouter = express.Router();
 // // 1. get the file and convert to path
 
 // const fileName = import.meta.url;
@@ -27,103 +29,192 @@ const authorsRouter = express.Router();
 //   "authors.json"
 // );
 
-// get starts here
-authorsRouter.get("/", (req, res) => {
-  // 1. read the filePath
-  const readFile = JSON.parse(fs.readFileSync(jsonFilePath));
-  console.log(readFile);
-  // 3. send the file path
-  res.send(readFile);
+authorPostsRouter.get("/", async (req, res, next) => {
+  try {
+    const authors = await readAuthors();
+    if (req.query && req.query.category) {
+      const filteredAuthors = authors.filter(
+        (author) => author.category === req.query.category
+      );
+      res.send(filteredAuthors);
+    } else {
+      res.send(authors);
+    }
+  } catch (error) {
+    next(error);
+  }
 });
 
-authorsRouter.post("/", (req, res) => {
-  // 1. read the request body
-  console.log("req body:", req.body);
+authorPostsRouter.post(
+  "/",
 
-  // 2. create a new user object
+  async (req, res, next) => {
+    try {
+      const authors = await readAuthors();
+      const newAuthor = {
+        ...req.body,
+        createdAt: new Date(),
+        id: uniqid(),
+        avatar:
+          `https://ui-avatars.com/api/name=` +
+          req.body.name +
+          "+" +
+          req.body.surname,
+      };
 
-  const newAuthor = {
-    ...req.body,
-    createdAt: new Date(),
-    id: uniqid(),
-    avatar:
-      `https://ui-avatars.com/api/name=` +
-      req.body.name +
-      "+" +
-      req.body.surname,
-  };
-  console.log(newAuthor);
+      authors.push(newAuthor);
+      writeAuthors(authors);
+      res.send(newAuthor);
+    } catch (error) {
+      next(error);
+    }
+  }
+);
 
-  //3. read the file
-  const users = JSON.parse(fs.readFileSync(jsonFilePath));
+// authorPostsRouter.post("/", (req, res) => {
+//   // 1. read the request body
+//   console.log("req body:", req.body);
 
-  //4. push the newUser into the array
-  users.push(newAuthor);
+// 2. create a new user object
 
-  //5, write the array back to file
-  fs.writeFileSync(jsonFilePath, JSON.stringify(users));
+//   const newAuthor = {
+//     ...req.body,
+//     createdAt: new Date(),
+//     id: uniqid(),
+//     avatar:
+//       `https://ui-avatars.com/api/name=` +
+//       req.body.name +
+//       "+" +
+//       req.body.surname,
+//   };
+//   console.log(newAuthor);
 
-  //6 send response
-  res.status(201).send({ newAuthor });
+//   //3. read the file
+//   const users = JSON.parse(fs.readFileSync(jsonFilePath));
+
+//   //4. push the newUser into the array
+//   users.push(newAuthor);
+
+//   //5, write the array back to file
+//   fs.writeFileSync(jsonFilePath, JSON.stringify(users));
+
+//   //6 send response
+//   res.status(201).send({ newAuthor });
+// });
+
+authorPostsRouter.get("/:authorId", async (req, res, next) => {
+  try {
+    const authors = await readAuthors();
+    const foundAuthor = authors.find(
+      (author) => author.id === req.params.authorId
+    );
+    if (foundAuthor) {
+      res.send(foundAuthor);
+    } else {
+      //   res.status(404).send("Author not found");
+      next(createError(404, `Author with id ${req.params.authorId} not found`));
+    }
+  } catch (error) {
+    next(error);
+  }
 });
 
-authorsRouter.get("/:userid", (req, res) => {
-  // 1. obtain userID from url
-  const userID = req.params.userid;
-  console.log("USER ID:", userID);
-  // 2. read the file
-  const users = JSON.parse(fs.readFileSync(jsonFilePath));
-  // 3. find specific user in ARRAY
-  const exactUser = users.find((user) => user.id === userID);
-  console.log(exactUser);
-  // 4. Send back a proper response
-  res.status(200).send(exactUser);
+// authorPostsRouter.get("/:userid", (req, res) => {
+//   // 1. obtain userID from url
+//   const userID = req.params.userid;
+//   console.log("USER ID:", userID);
+//   // 2. read the file
+//   const users = JSON.parse(fs.readFileSync(jsonFilePath));
+//   // 3. find specific user in ARRAY
+//   const exactUser = users.find((user) => user.id === userID);
+//   console.log(exactUser);
+//   // 4. Send back a proper response
+//   res.status(200).send(exactUser);
+// });
+
+authorPostsRouter.delete("/:authorId", async (req, res, next) => {
+  try {
+    const authors = await readAuthors();
+    const remAuthor = authors.filter(
+      (author) => author._id !== req.params.authorId
+    );
+    if (remAuthor) {
+      writeAuthors(remAuthor);
+      res.send();
+    } else {
+      next(createError(404, `author with id ${req.params.authorId} not found`));
+    }
+  } catch (error) {
+    next(error);
+  }
 });
 
-authorsRouter.delete("/:userid", (req, res) => {
-  // 1. Read file
-  const users = JSON.parse(fs.readFileSync(jsonFilePath));
+// authorPostsRouter.delete("/:userid", (req, res) => {
+//   // 1. Read file
+//   const users = JSON.parse(fs.readFileSync(jsonFilePath));
 
-  // 2. filter out the remaining users
-  const rem = users.filter((user) => user.id !== req.params.userid);
+//   // 2. filter out the remaining users
+//   const rem = users.filter((user) => user.id !== req.params.userid);
 
-  // 3. Save the remainer of the Array
-  fs.writeFileSync(jsonFilePath, JSON.stringify(rem));
+//   // 3. Save the remainer of the Array
+//   fs.writeFileSync(jsonFilePath, JSON.stringify(rem));
 
-  // 4. Send back a proper response
-  res.status(204).send();
+//   // 4. Send back a proper response
+//   res.status(204).send();
+// });
+
+authorPostsRouter.put("/:authorId", async (req, res, next) => {
+  try {
+    const authors = await readAuthors();
+    const index = authors.findIndex(
+      (author) => author.id === req.params.authorId
+    );
+    if (index !== -1) {
+      const oldAuthor = authors[index];
+      const newAuthor = { ...oldAuthor, ...req.body };
+      authors[index] = newAuthor;
+      writeAuthors(authors);
+      res.send(newAuthor);
+    } else {
+      next(createError(404, `Author with id ${req.params.authorId} not found`));
+    }
+  } catch (error) {
+    next(error);
+  }
 });
 
-authorsRouter.put("/:userid", (req, res) => {
-  //   1; read the file
-  const users = JSON.parse(fs.readFileSync(jsonFilePath));
-  //   2. modify the specific user
-  const index = users.findIndex((user) => user.id === req.params.userid);
-  const oldUser = users[index];
+// authorPostsRouter.put("/:userid", (req, res) => {
+//   //   1; read the file
+//   const users = JSON.parse(fs.readFileSync(jsonFilePath));
+//   //   2. modify the specific user
+//   const index = users.findIndex((user) => user.id === req.params.userid);
+//   const oldUser = users[index];
 
-  const updatedUser = {
-    ...oldUser,
-    ...req.body,
-    updatedAt: new Date(),
-  };
+//   const updatedUser = {
+//     ...oldUser,
+//     ...req.body,
+//     updatedAt: new Date(),
+//   };
 
-  users[index] = updatedUser;
+//   users[index] = updatedUser;
 
-  //   3. save modifies Array
-  fs.writeFileSync(jsonFilePath, JSON.stringify(users));
+//   //   3. save modifies Array
+//   fs.writeFileSync(jsonFilePath, JSON.stringify(users));
 
-  //   4. Send a proper response
-  res.send(updatedUser);
-});
+//   //   4. Send a proper response
+//   res.send(updatedUser);
+// });
 
 // POST authors/checkEmail => check if another author has the same email. The parameter should be passed in the body. It should return true or false.
-authorsRouter.post("/checkEmail", (req, res) => {
-  // 1. read the file
-  const users = JSON.parse(fs.readFileSync(jsonFilePath));
-  // 2. find the user with the same email
-  const user = users.find((user) => user.email === req.body.email);
-  // 3. send back a proper response
-  res.send(user ? true : false);
-});
 
-export default authorsRouter;
+//  *********CHECKING IF EMAIL IS VALID ************
+// authorPostsRouter.post("/checkEmail", (req, res) => {
+//   // 1. read the file
+//   const users = JSON.parse(fs.readFileSync(jsonFilePath));
+//   // 2. find the user with the same email
+//   const user = users.find((user) => user.email === req.body.email);
+//   // 3. send back a proper response
+//   res.send(user ? true : false);
+// });
+
+export default authorPostsRouter;
