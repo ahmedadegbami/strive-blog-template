@@ -9,11 +9,15 @@ import {
   badRequestErrorHandler,
   unauthorizedErrorHandler,
 } from "./errorHandlers.js";
+import { join } from "path";
 
 const server = express();
 
+const publicFolderPath = join(process.cwd(), "./public");
+
 //This is for request body
 server.use(express.json());
+server.use(express.static(publicFolderPath));
 
 // ***** This is a middleware for interaction with front end *****
 server.use(cors());

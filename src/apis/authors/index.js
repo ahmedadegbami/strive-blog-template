@@ -4,8 +4,13 @@ import { fileURLToPath } from "url";
 import { dirname, join, parse } from "path";
 import uniqid from "uniqid";
 import { response } from "express";
-import { readAuthors, writeAuthors } from "../../lib/fs-tools.js";
+import {
+  readAuthors,
+  writeAuthors,
+  saveAuthorsAvatars,
+} from "../../lib/fs-tools.js";
 import createError from "http-errors";
+import multer from "multer";
 
 const authorPostsRouter = express.Router();
 // // 1. get the file and convert to path
@@ -204,6 +209,47 @@ authorPostsRouter.put("/:authorId", async (req, res, next) => {
 //   //   4. Send a proper response
 //   res.send(updatedUser);
 // });
+
+authorPostsRouter.put(
+  "/:authorId/avatar",
+  multer().single("avatar"),
+  // {
+  //   fileFilter: (req, file, multerNext) => {
+  //     if (file.mimetype !== "image/gif") {
+  //       multerNext(createError(400, "Only GIF allowed!"));
+  //     } else {
+  //       multerNext(null, true);
+  //     }
+  //   },
+  //   limits: { fileSize: 1 * 1024 },
+  // }
+  async (req, res, next) => {
+    try {
+      const authors = await readAuthors();
+      const index = authors.findIndex(
+        (author) => author.id === req.params.authorId
+      );
+
+      if (index !== -1) {
+        const url = await saveAuthorsAvatars(
+          req.file.originalname,
+          req.file.buffer
+        );
+        const oldAuthor = authors[index];
+        const newAuthor = { ...oldAuthor, avatar: url };
+        console.log(req.file);
+        authors[index] = newAuthor;
+        res.send(newAuthor);
+      } else {
+        next(
+          createError(404, `Author with id ${req.params.authorId} not found`)
+        );
+      }
+    } catch (error) {
+      next(error);
+    }
+  }
+);
 
 // POST authors/checkEmail => check if another author has the same email. The parameter should be passed in the body. It should return true or false.
 
