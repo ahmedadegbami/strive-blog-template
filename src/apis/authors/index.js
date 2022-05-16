@@ -141,7 +141,7 @@ authorPostsRouter.delete("/:authorId", async (req, res, next) => {
   try {
     const authors = await readAuthors();
     const remAuthor = authors.filter(
-      (author) => author._id !== req.params.authorId
+      (author) => author.id !== req.params.authorId
     );
     if (remAuthor) {
       writeAuthors(remAuthor);
@@ -210,7 +210,7 @@ authorPostsRouter.put("/:authorId", async (req, res, next) => {
 //   res.send(updatedUser);
 // });
 
-authorPostsRouter.put(
+authorPostsRouter.post(
   "/:authorId/avatar",
   multer().single("avatar"),
   // {
@@ -239,6 +239,7 @@ authorPostsRouter.put(
         const newAuthor = { ...oldAuthor, avatar: url };
         console.log(req.file);
         authors[index] = newAuthor;
+        writeAuthors(authors);
         res.send(newAuthor);
       } else {
         next(

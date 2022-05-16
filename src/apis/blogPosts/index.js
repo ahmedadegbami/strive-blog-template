@@ -1,7 +1,4 @@
 import express from "express";
-import fs from "fs";
-import { fileURLToPath } from "url";
-import { dirname, join } from "path";
 import uniqid from "uniqid";
 import createError from "http-errors";
 import { checkBlogPostSchema, checkValidationResult } from "./validation.js";
@@ -91,20 +88,34 @@ blogPostsRouter.put("/:blogId", async (req, res, next) => {
 });
 
 // DELETE a blog by id
+
 blogPostsRouter.delete("/:blogId", async (req, res, next) => {
   try {
     const blogs = await readBlogs();
-    const remBlog = blogs.filter((blog) => blog._id !== req.params.blogId);
-    if (remBlog) {
-      writeBlogs(remBlog);
-      res.send();
+    const index = blogs.findIndex((blog) => blog._id === req.params.blogId);
+    if (index !== -1) {
+      const deletedBlog = blogs.splice(index, 1);
+      writeBlogs(blogs);
+      res.send(deletedBlog);
     } else {
+      //   res.status(404).send("Blog not found");
       next(createError(404, `Blog with id ${req.params.blogId} not found`));
     }
   } catch (error) {
     next(error);
   }
 });
+
+// blogPostsRouter.delete("/:blogId", async (req, res, next) => {
+//   try {
+//     const blogs = await readBlogs();
+//     const remBlogs = blogs.filter((blog) => blog._id !== req.params.blogId);
+//     await writeBlogs(remBlogs);
+//     res.send();
+//   } catch (error) {
+//     next(error);
+//   }
+// });
 
 blogPostsRouter.get("/:blogId/comments", async (req, res, next) => {
   try {
