@@ -9,7 +9,9 @@ const BlogItem = ({ author }) => {
     // <Link to={`/blog/${_id}`} className="blog-link">
     <Card className="blog-card">
       <Card.Img variant="top" src={author.avatar} className="blog-cover" />
-      <Card.Body>{/* <Card.Title>{title}</Card.Title> */}</Card.Body>
+      <Card.Body>
+        <Card.Title>{author.title}</Card.Title>
+      </Card.Body>
       <Card.Footer>
         <BlogAuthor author={author} />
       </Card.Footer>
