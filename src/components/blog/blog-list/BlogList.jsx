@@ -11,7 +11,7 @@ const BlogList = () => {
   }, []);
 
   const getData = async () => {
-    const response = await fetch("http://localhost:3001/authors");
+    const response = await fetch("");
     const data = await response.json();
     setAuthors(data);
   };
