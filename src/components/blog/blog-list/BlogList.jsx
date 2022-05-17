@@ -11,7 +11,7 @@ const BlogList = () => {
   }, []);
 
   const getData = async () => {
-    const response = await fetch("https://ahmed-striver.herokuapp.com/authors");
+    const response = await fetch("");
     console.log(response);
     const data = await response.json();
     setAuthors(data);
