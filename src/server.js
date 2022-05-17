@@ -20,7 +20,11 @@ server.use(express.json());
 server.use(express.static(publicFolderPath));
 
 // ***** This is a middleware for interaction with front end *****
-server.use(cors());
+const corsOptions = {
+  origin: "http://mywonderfulfrontend.com",
+};
+
+server.use(cors(corsOptions));
 
 // *********************** this are my ENDPOINTS ****************************
 
